@@ -1,8 +1,5 @@
 package com.danielsaraiva.sharebroker.api.v1.model;
 
-import com.danielsaraiva.sharebroker.domain.Buyer;
-import com.danielsaraiva.sharebroker.domain.Company;
-
 import lombok.Getter;
 import lombok.Setter;
 

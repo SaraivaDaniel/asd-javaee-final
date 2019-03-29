@@ -11,4 +11,6 @@ public interface ShareRepository extends CrudRepository<Share, Long> {
 	List<Share> findByCompanyId(Long companyId);
 	
 	List<Share> findByBuyerId(Long buyerId);
+	
+	List<Share> findByBuyerIdAndCompanyId(Long buyerId, Long companyId);
 }
