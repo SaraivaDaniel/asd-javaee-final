@@ -1,14 +1,23 @@
 package com.danielsaraiva.sharebroker.services;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
+
+import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
 
 import com.danielsaraiva.sharebroker.api.v1.model.BuyOrderDTO;
 import com.danielsaraiva.sharebroker.api.v1.model.SellOrderDTO;
 import com.danielsaraiva.sharebroker.domain.Buyer;
+import com.danielsaraiva.sharebroker.domain.Company;
 import com.danielsaraiva.sharebroker.domain.Share;
 import com.danielsaraiva.sharebroker.repositories.BuyerRepository;
 import com.danielsaraiva.sharebroker.repositories.ShareRepository;
@@ -70,9 +79,10 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
+	@Transactional
 	public BuyOrderDTO executeBuyOrderDTO(BuyOrderDTO buyOrderDTO) {
 		// carrega o buyer
-		Buyer buyer = getBuyerById(buyOrderDTO.getBuyerId());
+		Buyer newBuyer = getBuyerById(buyOrderDTO.getBuyerId());
 				
 		List<Share> availableShares = shareRepository
 				.findByCompanyId(buyOrderDTO.getCompanyId());
@@ -93,13 +103,25 @@ public class OrderServiceImpl implements OrderService {
 			toIndex = filteredShares.size();
 		}
 		
+		// guarda quantidades por buyer antigo
+		Map<Buyer, LongAdder> mapBuyerQuantidade = new ConcurrentHashMap<Buyer, LongAdder>();
+		
 		filteredShares.subList(0, toIndex)
 			.forEach(share -> {
+				mapBuyerQuantidade
+					.computeIfAbsent(share.getBuyer(), k -> new LongAdder())
+					.increment();
+				
 				share.setIsForSale(false);
 				share.setCurrentValue(buyOrderDTO.getValue());
-				share.setBuyer(buyer);
+				share.setBuyer(newBuyer);
 				shareRepository.save(share);
 			});
+		
+		// notifica os buyers
+		Company company = filteredShares.get(0).getCompany();
+		notificaBuyer(newBuyer, company, toIndex, buyOrderDTO.getValue(), "compra");
+		mapBuyerQuantidade.forEach((oldBuyer, quantity) -> notificaBuyer(oldBuyer, company, quantity.intValue(), buyOrderDTO.getValue(), "venda"));
 		
 		buyOrderDTO.setQuantity(toIndex);
 		return buyOrderDTO;
@@ -114,6 +136,11 @@ public class OrderServiceImpl implements OrderService {
 		}
 		
 		return optionalBuyer.get();
+	}
+	
+	private void notificaBuyer(Buyer buyer, Company company, Integer quantity, Double value, String action) {
+		System.out.println("Envia email para: " + buyer.getEmail());
+		System.out.printf("%s: %s: %s: %s\n", action, company.getName(), quantity.toString(), value.toString());
 	}
 
 }
