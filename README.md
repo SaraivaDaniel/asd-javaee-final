@@ -1,5 +1,14 @@
 # asd-javaee-final
 
+## Bibliotecas Utilizadas
+
+- Web: aplicação MVC com Spring e Tomcat
+- JPA: persistência de dados
+- MySql: driver JDBC para o JPA
+- RabbitMQ: permite acesso ao servidor de filas Rabbit
+- Lombok: anotações para simplificador o desenvolvimento evitando código boilerplate
+- Mail: utilizado para envio dos emails de notificação de compra e venda
+
 ## Preparar uma instancia do MYSQL
 1) se já tiver uma instancia executando, criar o banco sharebroker_dev
 2) se não, utilizar docker conforme instruções abaixo:
