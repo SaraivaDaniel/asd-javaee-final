@@ -11,53 +11,71 @@ import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
 
-import com.danielsaraiva.sharebroker.api.v1.model.BuyOrderDTO;
-import com.danielsaraiva.sharebroker.api.v1.model.SellOrderDTO;
+import com.danielsaraiva.sharebroker.api.v1.model.OrderDTO;
 import com.danielsaraiva.sharebroker.domain.Buyer;
 import com.danielsaraiva.sharebroker.domain.Company;
 import com.danielsaraiva.sharebroker.domain.Share;
 import com.danielsaraiva.sharebroker.emailsender.EmailSender;
+import com.danielsaraiva.sharebroker.rabbitmq.Message;
 import com.danielsaraiva.sharebroker.repositories.BuyerRepository;
 import com.danielsaraiva.sharebroker.repositories.ShareRepository;
 
 @Service
 public class OrderServiceImpl implements OrderService {
 	
+	public static final String ACTION_BUY = "buy";
+	public static final String ACTION_SELL = "sell";
+	
 	private ShareRepository shareRepository;
 	private BuyerRepository buyerRepository;
+	private MessageService messageService;
 	
 	public OrderServiceImpl(ShareRepository shareRepository,
-			BuyerRepository buyerRepository) {
+			BuyerRepository buyerRepository,
+			MessageService messageService) {
 		this.shareRepository = shareRepository;
 		this.buyerRepository = buyerRepository;
+		this.messageService = messageService;
 	}
 	
 	@Override
-	public SellOrderDTO newSellOrder(SellOrderDTO sellOrderDTO) {
+	public OrderDTO newSellOrder(OrderDTO sellOrderDTO) {
 		if (sellOrderDTO.getQuantity() == null || sellOrderDTO.getQuantity() <= 0) {
 			throw new IllegalArgumentException("Quantidade a venda não pode ser menor ou igual a zero");
 		}
 		
-		return executeSellOrderDTO(sellOrderDTO);
+		Message message = new Message();
+		message.setAction(ACTION_SELL);
+		message.setBody(sellOrderDTO);
+		
+		messageService.sendMessage(message);
+		
+		return sellOrderDTO;
 	}
 
 	@Override
-	public BuyOrderDTO newBuyOrder(BuyOrderDTO buyOrderDTO) {
+	public OrderDTO newBuyOrder(OrderDTO buyOrderDTO) {
 		if (buyOrderDTO.getQuantity() == null || buyOrderDTO.getQuantity() <= 0) {
 			throw new IllegalArgumentException("Quantidade a comprar não pode ser menor ou igual a zero");
 		}
 		
-		return executeBuyOrderDTO(buyOrderDTO);
+		Message message = new Message();
+		message.setAction(ACTION_BUY);
+		message.setBody(buyOrderDTO);
+		
+		messageService.sendMessage(message);
+		
+		return buyOrderDTO;
 	}
 
 	@Override
-	public SellOrderDTO executeSellOrderDTO(SellOrderDTO sellOrderDTO) {
+	public void executeSellOrder(OrderDTO sellOrderDTO) {
 		List<Share> availableShares = shareRepository.
 				findByBuyerIdAndCompanyId(sellOrderDTO.getBuyerId(), 
 										  sellOrderDTO.getCompanyId());
 		
 		if (availableShares.size() == 0) {
-			throw new IllegalArgumentException("Não existem ações disponíveis para o comprador/empresa");
+			return;
 		}
 		
 		int toIndex = sellOrderDTO.getQuantity();
@@ -73,12 +91,11 @@ public class OrderServiceImpl implements OrderService {
 			});
 		
 		sellOrderDTO.setQuantity(toIndex);
-		return sellOrderDTO;
 	}
 
 	@Override
 	@Transactional
-	public BuyOrderDTO executeBuyOrderDTO(BuyOrderDTO buyOrderDTO) {
+	public void executeBuyOrder(OrderDTO buyOrderDTO) {
 		// carrega o buyer
 		Buyer newBuyer = getBuyerById(buyOrderDTO.getBuyerId());
 				
@@ -86,7 +103,7 @@ public class OrderServiceImpl implements OrderService {
 				.findByCompanyId(buyOrderDTO.getCompanyId());
 		
 		if (availableShares.size() == 0) {
-			throw new IllegalArgumentException("Não existem ações disponíveis para compra");
+			return;
 		}
 		
 		// filtra acoes a venda com valor igual ou menor ao de compra
@@ -122,7 +139,6 @@ public class OrderServiceImpl implements OrderService {
 		mapBuyerQuantidade.forEach((oldBuyer, quantity) -> notificaBuyer(oldBuyer, company, quantity.intValue(), buyOrderDTO.getValue(), "venda"));
 		
 		buyOrderDTO.setQuantity(toIndex);
-		return buyOrderDTO;
 	}
 	
 	

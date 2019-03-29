@@ -21,7 +21,12 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-
+  rabbitmq:
+    host: 192.168.47.129
+    port: 5672
+    username: guest
+    password: guest
+    
 ---
 spring:
   profiles: prod
@@ -36,4 +41,9 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
+  rabbitmq:
+    host: 192.168.47.129
+    port: 5672
+    username: guest
+    password: guest
   

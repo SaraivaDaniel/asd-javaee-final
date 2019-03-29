@@ -7,8 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.danielsaraiva.sharebroker.api.v1.model.BuyOrderDTO;
-import com.danielsaraiva.sharebroker.api.v1.model.SellOrderDTO;
+import com.danielsaraiva.sharebroker.api.v1.model.OrderDTO;
 import com.danielsaraiva.sharebroker.services.OrderService;
 
 @RestController
@@ -25,13 +24,13 @@ public class OrderController {
 	
 	@PostMapping("/sell")
 	@ResponseStatus(HttpStatus.CREATED)
-	public SellOrderDTO sellOrder(@RequestBody SellOrderDTO sellOrderDTO) {
+	public OrderDTO sellOrder(@RequestBody OrderDTO sellOrderDTO) {
 		return orderService.newSellOrder(sellOrderDTO);
 	}
 	
 	@PostMapping("/buy")
 	@ResponseStatus(HttpStatus.CREATED)
-	public BuyOrderDTO buyOrder(@RequestBody BuyOrderDTO buyOrderDTO) {
+	public OrderDTO buyOrder(@RequestBody OrderDTO buyOrderDTO) {
 		return orderService.newBuyOrder(buyOrderDTO);
 	}
 

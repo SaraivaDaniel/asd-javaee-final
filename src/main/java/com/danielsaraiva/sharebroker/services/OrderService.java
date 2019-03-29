@@ -1,16 +1,15 @@
 package com.danielsaraiva.sharebroker.services;
 
-import com.danielsaraiva.sharebroker.api.v1.model.BuyOrderDTO;
-import com.danielsaraiva.sharebroker.api.v1.model.SellOrderDTO;
+import com.danielsaraiva.sharebroker.api.v1.model.OrderDTO;
 
 public interface OrderService {
 
-	SellOrderDTO newSellOrder(SellOrderDTO sellOrderDTO);
+	OrderDTO newSellOrder(OrderDTO sellOrderDTO);
 	
-	BuyOrderDTO newBuyOrder(BuyOrderDTO buyOrderDTO);
+	OrderDTO newBuyOrder(OrderDTO buyOrderDTO);
 	
-	SellOrderDTO executeSellOrderDTO(SellOrderDTO sellOrderDTO);
+	void executeSellOrder(OrderDTO sellOrderDTO);
 	
-	BuyOrderDTO executeBuyOrderDTO(BuyOrderDTO buyOrderDTO);
+	void executeBuyOrder(OrderDTO buyOrderDTO);
 	
 }
