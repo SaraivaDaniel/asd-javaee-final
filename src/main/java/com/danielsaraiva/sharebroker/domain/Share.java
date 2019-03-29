@@ -1,6 +1,7 @@
 package com.danielsaraiva.sharebroker.domain;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -26,10 +27,10 @@ public class Share {
 	
 	private Double saleValue;
 	
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	private Company company;
 	
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	private Buyer buyer;
 
 }

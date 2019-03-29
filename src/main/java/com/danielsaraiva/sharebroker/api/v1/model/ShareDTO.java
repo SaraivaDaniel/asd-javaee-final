@@ -1,7 +1,5 @@
 package com.danielsaraiva.sharebroker.api.v1.model;
 
-import org.springframework.data.annotation.ReadOnlyProperty;
-
 import com.danielsaraiva.sharebroker.domain.Buyer;
 import com.danielsaraiva.sharebroker.domain.Company;
 
@@ -14,21 +12,15 @@ public class ShareDTO {
 
 	private Long id;
 
-	@ReadOnlyProperty
 	private Boolean isForSale;
 	
-	@ReadOnlyProperty
 	private Double originalValue;
 	
-	@ReadOnlyProperty
 	private Double currentValue;
 	
-	@ReadOnlyProperty
 	private Double saleValue;
 	
-	@ReadOnlyProperty
-	private Company company;
+	private Long companyId;
 	
-	@ReadOnlyProperty
-	private Buyer buyer;
+	private Long buyerId;
 }
