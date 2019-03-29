@@ -1,12 +1,9 @@
 package com.danielsaraiva.sharebroker.services;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
 
@@ -19,6 +16,7 @@ import com.danielsaraiva.sharebroker.api.v1.model.SellOrderDTO;
 import com.danielsaraiva.sharebroker.domain.Buyer;
 import com.danielsaraiva.sharebroker.domain.Company;
 import com.danielsaraiva.sharebroker.domain.Share;
+import com.danielsaraiva.sharebroker.emailsender.EmailSender;
 import com.danielsaraiva.sharebroker.repositories.BuyerRepository;
 import com.danielsaraiva.sharebroker.repositories.ShareRepository;
 
@@ -139,8 +137,15 @@ public class OrderServiceImpl implements OrderService {
 	}
 	
 	private void notificaBuyer(Buyer buyer, Company company, Integer quantity, Double value, String action) {
+		EmailSender emailSender = new EmailSender();
 		System.out.println("Envia email para: " + buyer.getEmail());
-		System.out.printf("%s: %s: %s: %s\n", action, company.getName(), quantity.toString(), value.toString());
+		
+		String subject = "NOTIFICACAO DE " + action.toUpperCase();
+		String body = String.format("<h3>Ordem de %s executada com suceso!</h3>" + 
+				"<div>Empresa: %s</div><div>Quantidade: %s</div><div>Valor Unitario: %s</div>", 
+				action, company.getName(), quantity.toString(), value.toString());
+		
+		emailSender.sendEmail(buyer.getEmail(), subject, body);
 	}
 
 }
