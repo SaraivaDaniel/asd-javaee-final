@@ -1,5 +1,7 @@
 package com.danielsaraiva.sharebroker.services;
 
+import java.sql.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -123,10 +125,13 @@ public class OrderServiceImpl implements OrderService {
 		
 		filteredShares.subList(0, toIndex)
 			.forEach(share -> {
-				mapBuyerQuantidade
-					.computeIfAbsent(share.getBuyer(), k -> new LongAdder())
-					.increment();
+				if (share.getBuyer() != null) {
+					mapBuyerQuantidade
+						.computeIfAbsent(share.getBuyer(), k -> new LongAdder())
+						.increment();
+				}
 				
+				share.setDateBought(new java.util.Date(System.currentTimeMillis()));
 				share.setIsForSale(false);
 				share.setCurrentValue(buyOrderDTO.getValue());
 				share.setBuyer(newBuyer);
